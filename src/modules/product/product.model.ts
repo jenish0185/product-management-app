@@ -1,72 +1,79 @@
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, Model, Optional } from "sequelize";
 import sequelize from "../../config/database";
-import { UUID } from "node:crypto";
 
-class Product extends Model {
-    declare id: UUID;
-    declare name: string;
-    declare description: string;
-    declare vision: string;
-    declare problemStatement: string;
-    declare ownerId: UUID;
-    declare organizationId: UUID;
-    declare tags: string[]; // Assuming tags are stored as an array of strings
-    declare status: string;
-    declare createdAt: Date;
-    declare updatedAt: Date;
-}   
+export interface ProductAttributes {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    stock: number;
+    category: string;
+    imageUrl?: string;
+    isActive: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface ProductCreationAttributes
+    extends Optional<ProductAttributes, "id" | "imageUrl" | "isActive"> { }
+
+class Product
+    extends Model<ProductAttributes, ProductCreationAttributes>
+    implements ProductAttributes {
+    public id!: number;
+    public name!: string;
+    public description!: string;
+    public price!: number;
+    public stock!: number;
+    public category!: string;
+    public imageUrl?: string;
+    public isActive!: boolean;
+
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+}
 
 Product.init(
     {
         id: {
-            type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            primaryKey: true,   
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true,
         },
         name: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(255),
             allowNull: false,
         },
         description: {
             type: DataTypes.TEXT,
             allowNull: false,
         },
-        vision: {
-            type: DataTypes.TEXT,
+        price: {
+            type: DataTypes.DECIMAL(10, 2),
             allowNull: false,
         },
-        problemStatement: {
-            type: DataTypes.TEXT,
+        stock: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+        },
+        category: {
+            type: DataTypes.STRING(100),
             allowNull: false,
         },
-        ownerId: {
-            type: DataTypes.UUID,
-            allowNull: false,   
-        },
-        organizationId: {
-            type: DataTypes.UUID,
-            allowNull: false,
-        },
-        tags: {
-            type: DataTypes.ARRAY(DataTypes.STRING),
+        imageUrl: {
+            type: DataTypes.STRING(500),
             allowNull: true,
         },
-        status: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
+        isActive: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true,
         },
     },
-    {   
+    {
         sequelize,
-        modelName: "Product",
+        tableName: "products",
+        timestamps: true,
     }
 );
 
